@@ -1,15 +1,16 @@
 from collections import deque
 from Constants import *
 from Player import Player
-from Deck import Card
+from Deck import Deck, Card
 
 class Game:
     def __init__(self):
-        self.blind = set(Card)    # Stores two cards
-        self.ordered_players = list[Player]    # Players in order, with dealer in position -1
-        self.tricks = [None] * 6   # Trickinfo objects
+        self.blind = [Card] * 2    # Stores two cards
+        self.ordered_players = list[Player]    # Players in order, with dealer in position 0
+        self.tricks = [TrickInfo] * 6   # Trickinfo objects
         self.double_on_the_bump = False
-        self.called_suit = None 
+        self.deck = Deck()
+        self.called_suit = None
 
     def add_player(self, player):
         assert isinstance(player, Player)
@@ -45,6 +46,7 @@ class Game:
             elif player.role == 'Good Guy':
                 player.money += m
 
+
     def cleanup(self):
         """
         After a hand, reset the cards. 
@@ -63,7 +65,7 @@ class Game:
             player.role = None
 
         ## Reset global info
-        self.tricks = [None] * 6
+        self.tricks = [TrickInfo] * 6
         self.blind = set()
 
         ## Shift the dealer
@@ -110,9 +112,10 @@ class Game:
             card = players[i].play_card(players, cards_played)   ####align this code
         taker = players[self.determine_trick_winner(cards_played)] # determine off index of winning card
         taker.taken_cards += cards_played   # taker takes cards
-        trick = Trickinfo(leader, taker, cards_played)
+        trick = TrickInfo(leader, taker, cards_played)
         return trick
     
+
     def picking_phase(self):
         '''
         Assign roles and bury two
@@ -133,8 +136,21 @@ class Game:
                 if card.value == ACE and card.suit == called_suit:
                     player.role = PARTNER
                     pass
+                
+    def deal(self) -> None:
+        self.deck.shuffleDeck()
+        for player in self.ordered_players:
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+        self.blind[0] = self.deck.deal()
+        self.blind[1] = self.deck.deal()
+        for player in self.ordered_players:
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
     
-class Trickinfo:
+class TrickInfo:
     def __init__(self, leader, taker, cards_played):
         self.leader = leader
         self.taker = taker
