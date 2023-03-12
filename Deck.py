@@ -1,15 +1,6 @@
 from typing import List
 from Constants import *
-
-class Deck():
-    def __init__(self) -> None:
-        self.cards = List[Card]
-        suits = [TRUMP, CLUBS, SPADES, HEARTS]
-        values = [7, 8, 9, KING, 10, ACE, JACK, QUEEN]
-        for value in values:
-            for suit in suits:
-                self.cards.append(Card(value, suit))
-
+from random import shuffle
 
 class Card():
     def __init__(self, value: int, suit: int) -> None:
@@ -42,4 +33,19 @@ class Card():
         elif self.value == QUEEN:
             self.points = 3
             self.power = 11 + self.suit
-        
+
+
+class Deck():
+    def __init__(self) -> None:
+        self.cards = List[Card]
+        suits = [TRUMP, CLUBS, SPADES, HEARTS]
+        values = [7, 8, 9, KING, 10, ACE, JACK, QUEEN]
+        for value in values:
+            for suit in suits:
+                self.cards.append(Card(value, suit))
+    
+    def shuffleDeck(self) -> None:
+        shuffle(self.cards)
+    
+    def deal(self) -> Card:
+        return self.cards.pop()
