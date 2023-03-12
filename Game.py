@@ -2,15 +2,27 @@ from collections import deque
 from Constants import *
 from Player import Player
 from Deck import Deck, Card
+from typing import List
 
 class Game:
-    def __init__(self):
+    def __init__(self, player_types: List[int]):
         self.blind = [Card] * 2    # Stores two cards
-        self.ordered_players = list[Player]    # Players in order, with dealer in position 0
         self.tricks = [TrickInfo] * 6   # Trickinfo objects
         self.double_on_the_bump = False
         self.deck = Deck()
         self.called_suit = None
+        
+        self.ordered_players = list[Player]    # Players in order, with dealer in position 0
+        for idx, player_type in enumerate(player_types):
+            self.ordered_players[idx] = Player(player_type, starting_money=0)
+
+    def play_game(self, number_rounds):
+        for round_number in range(number_rounds):
+            self.picking_phase()
+            self.play_hand()
+
+    def picking_phase(self):
+        pass
 
     def add_player(self, player):
         assert isinstance(player, Player)

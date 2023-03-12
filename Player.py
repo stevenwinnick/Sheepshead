@@ -11,7 +11,7 @@ class Player():
         # Reset each hand
         self.player_type = player_type
         self.role = None # Picker, Partner, or Good Guy
-        self.position = None # Number of seats to the left of dealer
+        self.position = None # Number of seats to the left of dealer - 1
         self.hand = set[Card]
         self.played_cards = List[Card]
         self.taken_cards = List[Card]

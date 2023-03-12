@@ -37,7 +37,7 @@ class Card():
     def __eq__(self, other):
         return self.value == other.value and self.suit == other.suit
     
-    def Beats(self, opponent: 'Card', led_suit: int) -> bool:
+    def beats(self, opponent: 'Card', led_suit: int) -> bool:
         if self.suit == TRUMP:
             if opponent.suit == TRUMP:
                 return self.power > opponent.power
