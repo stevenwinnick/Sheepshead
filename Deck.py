@@ -33,6 +33,9 @@ class Card():
         elif self.value == QUEEN:
             self.points = 3
             self.power = 11 + self.suit
+
+    def __eq__(self, other):
+        return self.value == other.value and self.suit == other.suit
     
     def beats(self, opponent: 'Card', led_suit: int) -> bool:
         if self.suit == TRUMP:
