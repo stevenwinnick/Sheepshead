@@ -22,7 +22,7 @@ class Player():
             HEARTS: False
         }
 
-    def pick(self, blind: Tuple[Card, Card]) -> Tuple[bool, Tuple[Card, Card]]:
+    def pick(self, blind: set(Card)) -> Tuple[bool, set(Card)]:
         if self.player_type == MANUAL:
             return self.pickManual(self)
         elif self.player_type == RANDOM:
@@ -34,16 +34,16 @@ class Player():
         else:
             raise Exception("Invalid player type")
 
-    def pickManual(self, blind: Tuple[bool, Tuple[Card, Card]]) -> Tuple[bool, Tuple[Card, Card]]:
+    def pickManual(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
         pass
 
-    def pickRandom(self, blind: Tuple[bool, Tuple[Card, Card]]) -> Tuple[bool, Tuple[Card, Card]]:
+    def pickRandom(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
         return True, blind
 
-    def pickRobert(self, blind: Tuple[bool, Tuple[Card, Card]]) -> Tuple[bool, Tuple[Card, Card]]:
+    def pickRobert(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
         pass
 
-    def pickMauer(self, blind: Tuple[bool, Tuple[Card, Card]]) -> Tuple[bool, Tuple[Card, Card]]:
+    def pickMauer(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
         return False, blind
     
     def playCard(self, current_trick_cards: List[Card]) -> Card:

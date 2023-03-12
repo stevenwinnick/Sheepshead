@@ -33,6 +33,28 @@ class Card():
         elif self.value == QUEEN:
             self.points = 3
             self.power = 11 + self.suit
+    
+    def Beats(self, opponent: 'Card', led_suit: int) -> bool:
+        if self.suit == TRUMP:
+            if opponent.suit == TRUMP:
+                return self.power > opponent.power
+            else:
+                return True
+        else:
+            if self.suit == led_suit:
+                if opponent.suit == TRUMP:
+                    return False
+                elif opponent.suit == led_suit:
+                    return self.power > opponent.power
+                else:
+                    return True
+            else:
+                if opponent.suit == TRUMP:
+                    return False
+                elif opponent.suit == led_suit:
+                    return False
+                else:
+                    return True # Neither card beats, but this scenario not encountered in game
 
 
 class Deck():
