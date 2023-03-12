@@ -21,9 +21,6 @@ class Game:
             self.picking_phase()
             self.play_hand()
 
-    def picking_phase(self):
-        pass
-
     def add_player(self, player):
         assert isinstance(player, Player)
         self.ordered_players.append(player)
