@@ -1,13 +1,15 @@
 from collections import deque
 from Constants import *
 from Player import Player
+from Deck import Card
 
 class Game:
     def __init__(self):
-        self.blind = [None] * 2    # Stores two cards
-        self.ordered_players = list[Player]    # Players in order, with dealer in position 0
+        self.blind = set(Card)    # Stores two cards
+        self.ordered_players = list[Player]    # Players in order, with dealer in position -1
         self.tricks = [None] * 6   # Trickinfo objects
         self.double_on_the_bump = False
+        self.called_suit = None 
 
     def add_player(self, player):
         assert isinstance(player, Player)
@@ -32,7 +34,16 @@ class Game:
         self.cleanup()   # Reset for next hand
 
     def pay_up(self, bad_guys_win, multiplier):
-
+        m = multiplier
+        if bad_guys_win:
+            m *= -1
+        for player in self.players:
+            if player.role == 'Picker':
+                player.money -= (2 * m)
+            elif player.role == 'Partner':
+                player.money -= m
+            elif player.role == 'Good Guy':
+                player.money += m
 
     def cleanup(self):
         """
@@ -65,18 +76,16 @@ class Game:
         Count cards in taken_cards, determine whether bad guys win and what the points multiplier is
         """
         points = 0
-        for player in self.players:
+        for player in self.ordered_players:
             if player.role == 'Good Guy':
                 for card in player.taken_cards:
-                    points += card.value
+                    points += card.points
         multiplier = 1
         if points < 32 or points > 88:  # no schneider
             multiplier *= 2
         if self.double_on_the_bump:
             multiplier *= 2
         return (points < 61, multiplier)
-
-
 
     def determine_trick_winner(self, cards):
         """
@@ -86,7 +95,7 @@ class Game:
         winning_card = cards[0]
         winning_index = 0
         for i, card in enumerate(cards[1:]):
-            if card.beats(winning_card, led_suit):
+            if card.Beats(winning_card, led_suit):
                 winning_card = card
                 winning_index = i
         return winning_index
@@ -103,6 +112,27 @@ class Game:
         taker.taken_cards += cards_played   # taker takes cards
         trick = Trickinfo(leader, taker, cards_played)
         return trick
+    
+    def picking_phase(self):
+        '''
+        Assign roles and bury two
+        '''
+        called_suit = None
+        for player in self.ordered_players:
+            player.role = GOOD_GUY
+        for player in self.ordered_players:
+            picked, buried = player.pick(self.blind)
+            if picked:
+                called_suit = player.call_ace()
+                self.blind = buried
+                player.role = PICKER
+                break
+        self.called_suit = called_suit
+        for player in self.ordered_players:
+            for card in player.hand:
+                if card.value == ACE and card.suit == called_suit:
+                    player.role = PARTNER
+                    pass
     
 class Trickinfo:
     def __init__(self, leader, taker, cards_played):

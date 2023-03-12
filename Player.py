@@ -46,31 +46,50 @@ class Player():
     def pickMauer(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
         return False, blind
     
-    def playCard(self, current_trick_cards: List[Card]) -> Card:
+    def playCard(self, current_trick_cards: List[Card], called_suit: int) -> Card:
         if self.player_type == MANUAL:
-            return self.playCardManual(self, current_trick_cards)
+            return self.playCardManual(self, current_trick_cards, called_suit)
         elif self.player_type == RANDOM:
-            return self.playCardRandom(self, current_trick_cards)
+            return self.playCardRandom(self, current_trick_cards, called_suit)
         elif self.player_type == ROBERT_M_STRUPP:
-            return self.playCardRobert(self, current_trick_cards)
+            return self.playCardRobert(self, current_trick_cards, called_suit)
         elif self.player_type == MAUER:
-            return self.playCardMauer(self, current_trick_cards)
+            return self.playCardMauer(self, current_trick_cards, called_suit)
         else:
             raise Exception("Invalid player type")
     
-    def playCardManual(self, current_trick_cards: List[Card]) -> Card:
+    def playCardManual(self, current_trick_cards: List[Card], called_suit) -> Card:
         pass
     
-    def playCardRandom(self, current_trick_cards: List[Card]) -> Card:
+    def playCardRandom(self, current_trick_cards: List[Card], called_suit) -> Card:
+        if current_trick_cards == []:
+            return self.hand.pop()
         lead_suit = current_trick_cards[0].suit
-        for card in self.hand:
+        if lead_suit == called_suit:    # have to play called ace
+            for card in self.hand:
+                if card == Card(ACE, called_suit):
+                    return card
+
+        for card in self.hand:      # have to follow suit
             if card.suit == lead_suit:
                 self.hand.remove(card)
                 return card
+        if self.role == PICKER:
+            for card in self.hand:     # picker can't get rid of called suit
+                if card.suit != called_suit:
+                    self.hand.remove(card)
+                    return card
         return self.hand.pop()
     
-    def playCardRobert(self, current_trick_cards: List[Card]) -> Card:
+    def playCardRobert(self, current_trick_cards: List[Card], called_suit) -> Card:
         pass
 
-    def playCardMauer(self, current_trick_cards: List[Card]) -> Card:
+    def playCardMauer(self, current_trick_cards: List[Card], called_suit) -> Card:
         pass
+
+    def call_ace(self):
+        for card in self.hand:
+            if (card.suit != TRUMP) and (Card(ACE,card.suit) not in self.hand):
+                return card.suit
+            
+        raise Exception("Give him the book")
