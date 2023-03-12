@@ -1,13 +1,15 @@
 from collections import deque
 from Constants import *
 from Player import Player
+from Deck import Deck, Card
 
 class Game:
     def __init__(self):
-        self.blind = [None] * 2    # Stores two cards
+        self.blind = [Card] * 2    # Stores two cards
         self.ordered_players = list[Player]    # Players in order, with dealer in position 0
-        self.tricks = [None] * 6   # Trickinfo objects
+        self.tricks = [TrickInfo] * 6   # Trickinfo objects
         self.double_on_the_bump = False
+        self.deck = Deck()
 
     def add_player(self, player):
         assert isinstance(player, Player)
@@ -32,7 +34,7 @@ class Game:
         self.cleanup()   # Reset for next hand
 
     def pay_up(self, bad_guys_win, multiplier):
-
+        pass
 
     def cleanup(self):
         """
@@ -52,7 +54,7 @@ class Game:
             player.role = None
 
         ## Reset global info
-        self.tricks = [None] * 6
+        self.tricks = [TrickInfo] * 6
         self.blind = set()
 
         ## Shift the dealer
@@ -101,10 +103,23 @@ class Game:
             card = players[i].play_card(players, cards_played)   ####align this code
         taker = players[self.determine_trick_winner(cards_played)] # determine off index of winning card
         taker.taken_cards += cards_played   # taker takes cards
-        trick = Trickinfo(leader, taker, cards_played)
+        trick = TrickInfo(leader, taker, cards_played)
         return trick
     
-class Trickinfo:
+    def deal(self) -> None:
+        self.deck.shuffleDeck()
+        for player in self.ordered_players:
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+        self.blind[0] = self.deck.deal()
+        self.blind[1] = self.deck.deal()
+        for player in self.ordered_players:
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+            player.hand.add(self.deck.deal())
+    
+class TrickInfo:
     def __init__(self, leader, taker, cards_played):
         self.leader = leader
         self.taker = taker
