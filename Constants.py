@@ -1,12 +1,21 @@
+# Player types
+MANUAL = 0
+RANDOM = 1
+ROBERT_M_STRUPP = 2
+MAUER = 3
+
+# Player roles
 PICKER = 0
 PARTNER = 1
 GOOD_GUY = 2
 
+# SUITS
 TRUMP = 3
 CLUBS = 2
 SPADES = 1
 HEARTS = 0
 
+# FACE CARDS
 JACK = 11
 QUEEN = 12
 KING = 13
