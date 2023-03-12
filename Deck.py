@@ -34,7 +34,7 @@ class Card():
             self.points = 3
             self.power = 11 + self.suit
     
-    def Beats(self, opponent: 'Card', led_suit: int) -> bool:
+    def beats(self, opponent: 'Card', led_suit: int) -> bool:
         if self.suit == TRUMP:
             if opponent.suit == TRUMP:
                 return self.power > opponent.power
