@@ -32,10 +32,37 @@ class Card():
             self.power = 6 + self.suit
         elif self.value == QUEEN:
             self.points = 3
-            self.power = 11 + self.suit
+            self.power = 10 + self.suit
 
     def __eq__(self, other):
         return self.value == other.value and self.suit == other.suit
+    
+    def __str__(self):
+        if self.suit == TRUMP:
+            if self.value != JACK and self.value != QUEEN:
+                return str(self.value) + " of Trump"
+            elif self.power == 6:
+                return "Jack of Diamonds"
+            elif self.power == 7:
+                return "Jack of Hearts"
+            elif self.power == 8:
+                return "Jack of Clubs"
+            elif self.power == 9:
+                return "Jack of Spades"
+            elif self.power == 10:
+                return "Queen of Diamonds"
+            elif self.power == 11:
+                return "Queen of Hearts"
+            elif self.power == 12:
+                return "Queen of Clubs"
+            elif self.power == 13:
+                return "Queen of Spades"
+        elif self.suit == CLUBS:
+            return str(self.value) + " of Clubs"
+        elif self.suit == SPADES:
+            return str(self.value) + " of Spades"
+        elif self.suit == HEARTS:
+            return str(self.value) + " of Hearts"
     
     def beats(self, opponent: 'Card', led_suit: int) -> bool:
         if self.suit == TRUMP:
@@ -62,7 +89,7 @@ class Card():
 
 class Deck():
     def __init__(self) -> None:
-        self.cards = List[Card]
+        self.cards = []
         suits = [TRUMP, CLUBS, SPADES, HEARTS]
         values = [7, 8, 9, KING, 10, ACE, JACK, QUEEN]
         for value in values:

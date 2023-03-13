@@ -12,9 +12,9 @@ class Player():
         self.player_type = player_type
         self.role = None # Picker, Partner, or Good Guy
         self.position = None # Number of seats to the left of dealer - 1
-        self.hand = set[Card]
-        self.played_cards = List[Card]
-        self.taken_cards = List[Card]
+        self.hand = []
+        self.played_cards = []
+        self.taken_cards = []
         self.public_empty_suits = {
             TRUMP: False, 
             CLUBS: False, 
@@ -22,7 +22,7 @@ class Player():
             HEARTS: False
         }
 
-    def pick(self, blind: set(Card)) -> Tuple[bool, set(Card)]:
+    def pick(self, blind: set[Card]) -> Tuple[bool, set[Card]]:
         if self.player_type == MANUAL:
             return self.pickManual(self)
         elif self.player_type == RANDOM:
@@ -34,27 +34,27 @@ class Player():
         else:
             raise Exception("Invalid player type")
 
-    def pickManual(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
+    def pickManual(self, blind: set[Card]) -> Tuple[bool, set[Card]]:
         pass
 
-    def pickRandom(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
+    def pickRandom(self, blind: set[Card]) -> Tuple[bool, set[Card]]:
         return True, blind
 
-    def pickRobert(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
+    def pickRobert(self, blind: set[Card]) -> Tuple[bool, set[Card]]:
         pass
 
-    def pickMauer(self, blind: Tuple[bool, set(Card)]) -> Tuple[bool, set(Card)]:
+    def pickMauer(self, blind: set[Card]) -> Tuple[bool, set[Card]]:
         return False, blind
     
     def playCard(self, current_trick_cards: List[Card], called_suit: int) -> Card:
         if self.player_type == MANUAL:
-            return self.playCardManual(self, current_trick_cards, called_suit)
+            return self.playCardManual(current_trick_cards, called_suit)
         elif self.player_type == RANDOM:
-            return self.playCardRandom(self, current_trick_cards, called_suit)
+            return self.playCardRandom(current_trick_cards, called_suit)
         elif self.player_type == ROBERT_M_STRUPP:
-            return self.playCardRobert(self, current_trick_cards, called_suit)
+            return self.playCardRobert(current_trick_cards, called_suit)
         elif self.player_type == MAUER:
-            return self.playCardMauer(self, current_trick_cards, called_suit)
+            return self.playCardMauer(current_trick_cards, called_suit)
         else:
             raise Exception("Invalid player type")
     

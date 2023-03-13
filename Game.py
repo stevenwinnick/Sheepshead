@@ -6,18 +6,19 @@ from typing import List
 
 class Game:
     def __init__(self, player_types: List[int]):
-        self.blind = [Card] * 2    # Stores two cards
-        self.tricks = [TrickInfo] * 6   # Trickinfo objects
+        self.blind = [None] * 2    # Stores two cards
+        self.tricks = [None] * 6   # Trickinfo objects
         self.double_on_the_bump = False
         self.deck = Deck()
         self.called_suit = None
         
-        self.ordered_players = list[Player]    # Players in order, with dealer in position 0
+        self.ordered_players = []    # Players in order, with dealer in position 0
         for idx, player_type in enumerate(player_types):
-            self.ordered_players[idx] = Player(player_type, starting_money=0)
+            self.ordered_players.append(Player(player_type, starting_money=0))
 
     def play_game(self, number_rounds):
         for round_number in range(number_rounds):
+            self.deal()
             self.picking_phase()
             self.play_hand()
 
@@ -30,13 +31,13 @@ class Game:
         Plays a hand of sheepshead with the given players, consisting of six tricks, 
         once dealing, picking, calling, has happenned
         """
-        assert len(self.ordered_players == 5) # make sure it is 5 handed
+        assert len(self.ordered_players) == 5 # make sure it is 5 handed
 
         players = deque(self.ordered_players)  # dequeue of players that updates who goes first each trick
         for i in range(6):  # play six tricks
             trick = self.play_trick(players) # Run the trick
             self.tricks[i] = trick # Record the trickinfo 
-            while players.front() != trick.taker:  # set the taker to be the next leader
+            while players[0] != trick.taker:  # set the taker to be the next leader
                 players.append(players.popleft())   # move the first item to the last
 
         bad_guys_win, multiplier = self.determine_hand_winner()  # figure out who won and how much to pay
@@ -47,12 +48,12 @@ class Game:
         m = multiplier
         if bad_guys_win:
             m *= -1
-        for player in self.players:
-            if player.role == 'Picker':
+        for player in self.ordered_players:
+            if player.role == PICKER:
                 player.money -= (2 * m)
-            elif player.role == 'Partner':
+            elif player.role == PARTNER:
                 player.money -= m
-            elif player.role == 'Good Guy':
+            elif player.role == GOOD_GUY:
                 player.money += m
 
 
@@ -74,8 +75,8 @@ class Game:
             player.role = None
 
         ## Reset global info
-        self.tricks = [TrickInfo] * 6
-        self.blind = set()
+        self.tricks = [None] * 6
+        self.blind = []
 
         ## Shift the dealer
         first = self.ordered_players[0]
@@ -106,7 +107,7 @@ class Game:
         winning_card = cards[0]
         winning_index = 0
         for i, card in enumerate(cards[1:]):
-            if card.Beats(winning_card, led_suit):
+            if card.beats(winning_card, led_suit):
                 winning_card = card
                 winning_index = i
         return winning_index
@@ -118,7 +119,9 @@ class Game:
         leader = players[0]
         cards_played = []
         for i in range(5):   # Each player plays a card
-            card = players[i].play_card(players, cards_played)   ####align this code
+            card = players[i].playCard(cards_played, self.called_suit)   ####should eventually pass player
+            print(f'Player {i} played: {card} \n')
+            cards_played.append(card)
         taker = players[self.determine_trick_winner(cards_played)] # determine off index of winning card
         taker.taken_cards += cards_played   # taker takes cards
         trick = TrickInfo(leader, taker, cards_played)
@@ -133,7 +136,8 @@ class Game:
         for player in self.ordered_players:
             player.role = GOOD_GUY
         for player in self.ordered_players:
-            picked, buried = player.pick(self.blind)
+            blind = self.blind
+            picked, buried = player.pick(blind)
             if picked:
                 called_suit = player.call_ace()
                 self.blind = buried
@@ -149,15 +153,15 @@ class Game:
     def deal(self) -> None:
         self.deck.shuffleDeck()
         for player in self.ordered_players:
-            player.hand.add(self.deck.deal())
-            player.hand.add(self.deck.deal())
-            player.hand.add(self.deck.deal())
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
         self.blind[0] = self.deck.deal()
         self.blind[1] = self.deck.deal()
         for player in self.ordered_players:
-            player.hand.add(self.deck.deal())
-            player.hand.add(self.deck.deal())
-            player.hand.add(self.deck.deal())
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
     
 class TrickInfo:
     def __init__(self, leader, taker, cards_played):
