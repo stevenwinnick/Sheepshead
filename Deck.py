@@ -7,6 +7,15 @@ class Card():
         
         self.value = value
         self.suit = suit
+        
+        # Decide if Trump
+        self.is_trump = False
+        if self.suit == DIAMONDS:
+            self.is_trump = True
+        elif self.value == JACK:
+            self.is_trump = True
+        elif self.value == QUEEN:
+            self.is_trump = True
 
         # Get points and power
         if self.value == 7:
@@ -38,9 +47,17 @@ class Card():
         return self.value == other.value and self.suit == other.suit
     
     def __str__(self):
-        if self.suit == TRUMP:
+        name = self.value
+        if name == KING:
+            name = "King"
+        elif name == ACE:
+            name = "Ace"
+        else:
+            name = str(name)
+        
+        if self.is_trump:
             if self.value != JACK and self.value != QUEEN:
-                return str(self.value) + " of Trump"
+                return name + " of Trump"
             elif self.power == 6:
                 return "Jack of Diamonds"
             elif self.power == 7:
@@ -58,28 +75,28 @@ class Card():
             elif self.power == 13:
                 return "Queen of Spades"
         elif self.suit == CLUBS:
-            return str(self.value) + " of Clubs"
+            return name + " of Clubs"
         elif self.suit == SPADES:
-            return str(self.value) + " of Spades"
+            return name + " of Spades"
         elif self.suit == HEARTS:
-            return str(self.value) + " of Hearts"
+            return name + " of Hearts"
     
     def beats(self, opponent: 'Card', led_suit: int) -> bool:
-        if self.suit == TRUMP:
-            if opponent.suit == TRUMP:
+        if self.is_trump:
+            if opponent.is_trump:
                 return self.power > opponent.power
             else:
                 return True
         else:
             if self.suit == led_suit:
-                if opponent.suit == TRUMP:
+                if opponent.is_trump:
                     return False
                 elif opponent.suit == led_suit:
                     return self.power > opponent.power
                 else:
                     return True
             else:
-                if opponent.suit == TRUMP:
+                if opponent.is_trump:
                     return False
                 elif opponent.suit == led_suit:
                     return False
@@ -90,7 +107,7 @@ class Card():
 class Deck():
     def __init__(self) -> None:
         self.cards = []
-        suits = [TRUMP, CLUBS, SPADES, HEARTS]
+        suits = [CLUBS, SPADES, HEARTS, DIAMONDS]
         values = [7, 8, 9, KING, 10, ACE, JACK, QUEEN]
         for value in values:
             for suit in suits:

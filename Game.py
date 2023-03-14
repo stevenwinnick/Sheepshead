@@ -14,13 +14,57 @@ class Game:
         
         self.ordered_players = []    # Players in order, with dealer in position 0
         for idx, player_type in enumerate(player_types):
-            self.ordered_players.append(Player(player_type, starting_money=0))
+            self.ordered_players.append(Player(player_type, starting_money=0, game=self))
 
     def play_game(self, number_rounds):
         for round_number in range(number_rounds):
             self.deal()
             self.picking_phase()
             self.play_hand()
+
+    def deal(self) -> None:
+        self.deck.shuffleDeck()
+        for player in self.ordered_players:
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
+        self.blind[0] = self.deck.deal()
+        self.blind[1] = self.deck.deal()
+        for player in self.ordered_players:
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
+            player.hand.append(self.deck.deal())
+
+    def picking_phase(self):
+        '''
+        Assign roles and bury two
+        '''
+        called_suit = None
+        for player in self.ordered_players:
+            player.role = GOOD_GUY
+        for idx, player in enumerate(self.ordered_players):
+            blind = self.blind
+            picked, buried = player.pick(blind)
+            if picked:
+                print(f'Player {idx} picked')
+                called_suit = player.call_ace()
+                called_suit_string = None
+                if called_suit == CLUBS:
+                    called_suit_string = 'Clubs'
+                elif called_suit == SPADES:
+                    called_suit_string = 'Spades'
+                elif called_suit == HEARTS:
+                    called_suit_string = 'Hearts'
+                print('Called suit:', called_suit_string)
+                self.blind = buried
+                player.role = PICKER
+                break
+        self.called_suit = called_suit
+        for idx, player in enumerate(self.ordered_players):
+            for card in player.hand:
+                if card.value == ACE and card.suit == called_suit:
+                    player.role = PARTNER
+                    print(f'Player {idx} is the partner')
 
     def add_player(self, player):
         assert isinstance(player, Player)
@@ -36,11 +80,16 @@ class Game:
         players = deque(self.ordered_players)  # dequeue of players that updates who goes first each trick
         for i in range(6):  # play six tricks
             trick = self.play_trick(players) # Run the trick
-            self.tricks[i] = trick # Record the trickinfo 
+            self.tricks[i] = trick # Record the trickinfo
+            print(f'Trick taken by player {self.ordered_players.index(trick.taker)}')
             while players[0] != trick.taker:  # set the taker to be the next leader
                 players.append(players.popleft())   # move the first item to the last
 
         bad_guys_win, multiplier = self.determine_hand_winner()  # figure out who won and how much to pay
+        if bad_guys_win:
+            print("Bad guys win")
+        else:
+            print("Good guys win")
         self.pay_up(bad_guys_win, multiplier)
         self.cleanup()   # Reset for next hand
 
@@ -66,7 +115,7 @@ class Game:
         for player in self.ordered_players:
             player.taken_cards = []
             player.public_empty_suits = {
-            TRUMP: False, 
+            "Trump": False, 
             CLUBS: False, 
             SPADES: False, 
             HEARTS: False
@@ -120,48 +169,13 @@ class Game:
         cards_played = []
         for i in range(5):   # Each player plays a card
             card = players[i].playCard(cards_played, self.called_suit)   ####should eventually pass player
-            print(f'Player {i} played: {card} \n')
+            print(f'Player {self.ordered_players.index(players[i])} played: {card}')
             cards_played.append(card)
         taker = players[self.determine_trick_winner(cards_played)] # determine off index of winning card
         taker.taken_cards += cards_played   # taker takes cards
         trick = TrickInfo(leader, taker, cards_played)
         return trick
-    
 
-    def picking_phase(self):
-        '''
-        Assign roles and bury two
-        '''
-        called_suit = None
-        for player in self.ordered_players:
-            player.role = GOOD_GUY
-        for player in self.ordered_players:
-            blind = self.blind
-            picked, buried = player.pick(blind)
-            if picked:
-                called_suit = player.call_ace()
-                self.blind = buried
-                player.role = PICKER
-                break
-        self.called_suit = called_suit
-        for player in self.ordered_players:
-            for card in player.hand:
-                if card.value == ACE and card.suit == called_suit:
-                    player.role = PARTNER
-                    pass
-                
-    def deal(self) -> None:
-        self.deck.shuffleDeck()
-        for player in self.ordered_players:
-            player.hand.append(self.deck.deal())
-            player.hand.append(self.deck.deal())
-            player.hand.append(self.deck.deal())
-        self.blind[0] = self.deck.deal()
-        self.blind[1] = self.deck.deal()
-        for player in self.ordered_players:
-            player.hand.append(self.deck.deal())
-            player.hand.append(self.deck.deal())
-            player.hand.append(self.deck.deal())
     
 class TrickInfo:
     def __init__(self, leader, taker, cards_played):

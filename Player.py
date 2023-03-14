@@ -1,11 +1,15 @@
 from Deck import Card
-from typing import List, Tuple
 from Constants import *
+from typing import List, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from Game import Game
 
 class Player():
-    def __init__(self, player_type: int, starting_money: int) -> None:
+    def __init__(self, player_type: int, starting_money: int, game: 'Game') -> None:
 
         # Throughout game
+        self.game = game
         self.money = starting_money
 
         # Reset each hand
@@ -16,7 +20,7 @@ class Player():
         self.played_cards = []
         self.taken_cards = []
         self.public_empty_suits = {
-            TRUMP: False, 
+            "Trump": False, 
             CLUBS: False, 
             SPADES: False, 
             HEARTS: False
@@ -62,23 +66,41 @@ class Player():
         pass
     
     def playCardRandom(self, current_trick_cards: List[Card], called_suit) -> Card:
+        
+        # Player going first plays a random card
         if current_trick_cards == []:
             return self.hand.pop()
+        
+        # Determine lead suit
         lead_suit = current_trick_cards[0].suit
-        if lead_suit == called_suit:    # have to play called ace
+        lead_trump = False
+        if current_trick_cards[0].is_trump:
+            lead_trump = True
+
+        # Have to play called ace if you have it
+        if lead_suit == called_suit:
             for card in self.hand:
                 if card == Card(ACE, called_suit):
+                    self.hand.remove(card)
                     return card
 
-        for card in self.hand:      # have to follow suit
-            if card.suit == lead_suit:
-                self.hand.remove(card)
-                return card
+        # Picker can't play called suit
         if self.role == PICKER:
-            for card in self.hand:     # picker can't get rid of called suit
+            for card in self.hand:
                 if card.suit != called_suit:
                     self.hand.remove(card)
                     return card
+        
+        # Otherwise play random card of called suit
+        for card in self.hand:      # have to follow suit
+            if lead_trump and card.is_trump:
+                self.hand.remove(card)
+                return card
+            elif card.suit == lead_suit:
+                self.hand.remove(card)
+                return card
+        
+        # If no card of called suit, play a random card
         return self.hand.pop()
     
     def playCardRobert(self, current_trick_cards: List[Card], called_suit) -> Card:
@@ -89,7 +111,7 @@ class Player():
 
     def call_ace(self):
         for card in self.hand:
-            if (card.suit != TRUMP) and (Card(ACE,card.suit) not in self.hand):
+            if (not card.is_trump) and (Card(ACE,card.suit) not in self.hand):
                 return card.suit
             
         raise Exception("Give him the book")
