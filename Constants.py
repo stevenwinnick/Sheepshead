@@ -9,11 +9,14 @@ PICKER = 0
 PARTNER = 1
 GOOD_GUY = 2
 
-# SUITS
+# Printed Suits
 CLUBS = 3
 SPADES = 2
 HEARTS = 1
 DIAMONDS = 0
+
+# Sheep Suits (includes printed suits besides DIAMONDS)
+TRUMP = 0
 
 # FACE CARDS
 JACK = 11

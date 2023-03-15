@@ -6,7 +6,7 @@ from typing import List
 
 class Game:
     def __init__(self, player_types: List[int]):
-        self.blind = [None] * 2    # Stores two cards
+        self.blind = []    # Stores two cards
         self.tricks = [None] * 6   # Trickinfo objects
         self.double_on_the_bump = False
         self.deck = Deck()
@@ -28,8 +28,8 @@ class Game:
             player.hand.append(self.deck.deal())
             player.hand.append(self.deck.deal())
             player.hand.append(self.deck.deal())
-        self.blind[0] = self.deck.deal()
-        self.blind[1] = self.deck.deal()
+        self.blind.append(self.deck.deal())
+        self.blind.append(self.deck.deal())
         for player in self.ordered_players:
             player.hand.append(self.deck.deal())
             player.hand.append(self.deck.deal())
@@ -47,7 +47,7 @@ class Game:
             picked, buried = player.pick(blind)
             if picked:
                 print(f'Player {idx} picked')
-                called_suit = player.call_ace()
+                called_suit = player.call_ace(buried)
                 called_suit_string = None
                 if called_suit == CLUBS:
                     called_suit_string = 'Clubs'
@@ -62,7 +62,7 @@ class Game:
         self.called_suit = called_suit
         for idx, player in enumerate(self.ordered_players):
             for card in player.hand:
-                if card.value == ACE and card.suit == called_suit:
+                if card.value == ACE and card.sheep_suit == called_suit:
                     player.role = PARTNER
                     print(f'Player {idx} is the partner')
 
@@ -113,15 +113,20 @@ class Game:
 
         ## Reset Players Cards
         for player in self.ordered_players:
+            self.deck.cards += player.taken_cards
             player.taken_cards = []
             player.public_empty_suits = {
-            "Trump": False, 
+            TRUMP: False, 
             CLUBS: False, 
             SPADES: False, 
             HEARTS: False
         }
             player.played_cards = []
             player.role = None
+
+        ## Shuffle the deck
+        self.deck.cards += self.blind
+        self.deck.shuffleDeck()
 
         ## Reset global info
         self.tricks = [None] * 6
@@ -148,17 +153,16 @@ class Game:
             multiplier *= 2
         return (points < 61, multiplier)
 
-    def determine_trick_winner(self, cards):
+    def determine_trick_winner(self, cards: List[Card]):
         """
         Given cards, return index of winner
         """
-        led_suit = cards[0].suit
         winning_card = cards[0]
         winning_index = 0
         for i, card in enumerate(cards[1:]):
-            if card.beats(winning_card, led_suit):
+            if card.beats(opponent=winning_card, led_card=cards[0]):
                 winning_card = card
-                winning_index = i
+                winning_index = i + 1 # since only enumerating from cards[1]
         return winning_index
 
     def play_trick(self, players):
