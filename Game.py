@@ -1,7 +1,8 @@
 from collections import deque
 from Constants import *
-from Player import Player
 from Deck import Deck, Card
+from Player import Player
+from PlayerTypes.RandomPlayer import RandomPlayer
 from typing import List
 
 class Game:
@@ -13,8 +14,15 @@ class Game:
         self.called_suit = None
         
         self.ordered_players = []    # Players in order, with dealer in position 0
-        for idx, player_type in enumerate(player_types):
-            self.ordered_players.append(Player(player_type, starting_money=0, game=self))
+        for player_type in player_types:
+            if player_type == MANUAL:
+                pass
+            elif player_type == RANDOM:
+                self.ordered_players.append(RandomPlayer(game=self, starting_money=5))
+            elif player_type == ROBERT_M_STRUPP:
+                pass
+            elif player_type == MAUER:
+                pass            
 
     def play_game(self, number_rounds):
         for round_number in range(number_rounds):
@@ -177,8 +185,7 @@ class Game:
             cards_played.append(card)
         taker = players[self.determine_trick_winner(cards_played)] # determine off index of winning card
         taker.taken_cards += cards_played   # taker takes cards
-        trick = TrickInfo(leader, taker, cards_played)
-        return trick
+        return TrickInfo(leader, taker, cards_played)
 
     
 class TrickInfo:
