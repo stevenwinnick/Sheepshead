@@ -143,7 +143,7 @@ class Game:
         """
         points = 0
         for player in self.ordered_players:
-            if player.role == 'Good Guy':
+            if player.role == GOOD_GUY:
                 for card in player.taken_cards:
                     points += card.points
         multiplier = 1
