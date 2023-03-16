@@ -27,7 +27,7 @@ class Player():
             HEARTS: False
         }
 
-    def pick_or_pass(self, blind: List[Card]) -> Tuple[bool, List[Card]]:
+    def pick_or_pass(self, blind: List[Card]) -> Tuple[bool, List[Card], Card, Card]: # picked, buried, called ace, hole
         raise Exception("This player type doesn't know how to pick")
     
     def bury_two(self, hand_plus_blind: List[Card]) -> Tuple[List[Card], List[Card]]:
