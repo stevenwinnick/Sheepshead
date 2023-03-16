@@ -17,12 +17,12 @@ class RandomPlayer(Player):
     def call_ace(self, buried: List[Card]) -> Tuple[Card, Card]: # second card in the hole if doing unknown ace
         callable_aces, unknown_ace = self.get_callable_aces(buried)
         if unknown_ace:
-            hole = self.hand.pop()
+            self.hole = self.hand.pop()
             if len(callable_aces) == 0:
                 self.playing_alone = True
-                return None, hole
+                return None, self.hole
             else:
-                return callable_aces[0], hole
+                return callable_aces[0], self.hole
         else:
             if len(callable_aces) == 0:
                 self.playing_alone = True
@@ -38,5 +38,13 @@ class RandomPlayer(Player):
         
         # Determine playable cards
         playable_cards = self.get_playable_cards(current_trick_cards[0], called_ace)
+
+        # Play hole if required
+        if playable_cards[0] == self.hole:
+            hole_card = self.hole
+            self.hole = None
+            return hole_card
+
+        # Otherwise play a random card
         self.hand.remove(playable_cards[0])
         return playable_cards[0]

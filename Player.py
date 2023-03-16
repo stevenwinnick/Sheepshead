@@ -18,6 +18,7 @@ class Player():
         self.playing_alone = False
         self.position = None # Number of seats to the left of dealer - 1
         self.hand = []
+        self.hole = None
         self.played_cards = []
         self.taken_cards = []
         self.public_empty_suits = {
@@ -86,11 +87,11 @@ class Player():
         else:
             return callable_cards, False
     
-    def get_unknown_aces(hand: List[Card], buried: List[Card], hole: Card):
+    def get_unknown_aces(self, hand: List[Card], buried: List[Card]):
         unknown_aces = []
         for suit_minus_one in range(3):
             ace_known = False
-            for card in hand + buried + hole:
+            for card in hand + buried + (self.hole):
                 if card.value == ACE and card.sheep_suit == suit_minus_one:
                     ace_known = True
             if not ace_known:
@@ -112,8 +113,20 @@ class Player():
                 if card == called_ace and led_card.sheep_suit == called_ace.sheep_suit:
                     return [card]
         
+        # Picker must play hole card on unknown ace when called suit led
         # Picker can't play their last fail of the called suit unless the called suit is led or its last card in hand
         if self.role == PICKER:
+            
+            # Hole card on unknown ace
+            if self.playing_alone:
+                if led_card.sheep_suit == called_ace.sheep_suit:
+                    return self.hole
+                
+            # Hole if hand empty
+            if len(self.hand) == 0:
+                return self.hole
+
+            # Can't play last fail usually
             qty_cards_in_called_suit = 0
             for card in self.hand:
                 if card.sheep_suit == called_ace.sheep_suit:
