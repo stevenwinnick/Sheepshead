@@ -11,9 +11,24 @@ class RandomPlayer(Player):
     def __init__(self, game: 'Game', starting_money: int):
         super().__init__(game, starting_money)
 
-    def pick(self, blind: List[Card]) -> Tuple[bool, List[Card]]:
+    def pick_or_pass(self, blind: List[Card]) -> Tuple[bool, List[Card]]:
         return True, blind
     
+    def call_ace(self, buried: List[Card]) -> Tuple[Card, Card]: # second card in the hole if doing unknown ace
+        callable_aces, unknown_ace = self.get_callable_aces(buried)
+        if unknown_ace:
+            hole = self.hand.pop()
+            if len(callable_aces) == 0:
+                self.playing_alone = True
+                return None, hole
+            else:
+                return callable_aces[0], hole
+        else:
+            if len(callable_aces) == 0:
+                self.playing_alone = True
+                return None, None
+            return callable_aces[0], None
+
     def playCard(self, current_trick_cards: List[Card], called_suit) -> Card:
         
         # Player going first plays a random card
@@ -72,11 +87,3 @@ class RandomPlayer(Player):
         # If no card of called suit, play a random card
         print("Playing random card")
         return self.hand.pop()
-    
-    def call_ace(self, buried: List[Card]):
-        for card in self.hand:
-            if (card.sheep_suit != TRUMP) and (Card(ACE,card.sheep_suit) not in self.hand):
-                return card.sheep_suit
-        for card in self.hand:
-            print(card)
-        raise Exception("Give him the book")
