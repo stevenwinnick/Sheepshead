@@ -83,7 +83,7 @@ class Game:
         else:
             for idx, player in enumerate(self.ordered_players):
                 for card in player.hand:
-                    if card.value == ACE and card.sheep_suit == self.called_ace.sheep_suit:
+                    if card.value == self.called_ace:
                         player.role = PARTNER
                         print(f'Player {idx} is the partner')
                         break

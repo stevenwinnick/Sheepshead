@@ -1,7 +1,6 @@
 # Backlog
 
-* Add methods to base Player that determines playable cards
-* Add unknown ace functionality
+* Add unknown ace functionality with buried card to Game
 * Consider if Game should track players in a fixed order instead of in an order where dealer is always first
 
 * Add Leaster

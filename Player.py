@@ -97,8 +97,49 @@ class Player():
                 unknown_aces.append(Card(ACE, suit_minus_one + 1))
         return unknown_aces
 
-    def playCard(self, current_trick_cards: List[Card], called_suit: int) -> Card:
+    def playCard(self, current_trick_cards: List[Card], called_ace: Card) -> Card:
         raise Exception("This player type doesn't know how to play")
     
-    def get_playable_cards(self, led_card: Card) -> List[Card]:
-        pass
+    def get_playable_cards(self, led_card: Card, called_ace: Card) -> List[Card]:
+        
+        # If leading, play any card
+        if led_card == None:
+            return self.hand
+
+        # Partner must play called ace if its suit is led
+        if self.role == PARTNER:
+            for card in self.hand:
+                if card == called_ace and led_card.sheep_suit == called_ace.sheep_suit:
+                    return [card]
+        
+        # Picker can't play their last fail of the called suit unless the called suit is led or its last card in hand
+        if self.role == PICKER:
+            qty_cards_in_called_suit = 0
+            for card in self.hand:
+                if card.sheep_suit == called_ace.sheep_suit:
+                    qty_cards_in_called_suit += 1
+            if qty_cards_in_called_suit == 1 and len(self.hand) > 1:
+                playable_cards = []
+                for card in self.hand:
+                    if card.sheep_suit != called_ace.sheep_suit:
+                        playable_cards.append(card)
+                return playable_cards
+        
+        # If have cards of led suit, need to play them
+        playable_cards = []
+        for card in self.hand:
+            if card.sheep_suit == called_ace.sheep_suit:
+                playable_cards.append(card)
+        if len(playable_cards) > 0:
+            return playable_cards
+        
+        # Partner can't play called ace unless it is led or last card
+        if self.role == PARTNER:
+            playable_cards = self.hand
+            for card in playable_cards:
+                if card == called_ace:
+                    playable_cards.remove(card)
+            return playable_cards
+
+        # Otherwise, play any card
+        return self.hand
