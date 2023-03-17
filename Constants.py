@@ -17,6 +17,7 @@ DIAMONDS = 0
 
 # Sheep Suits (includes printed suits besides DIAMONDS)
 TRUMP = 0
+DUMMY = 5 # To make logic easier for when picker plays alone
 
 # FACE CARDS
 JACK = 11

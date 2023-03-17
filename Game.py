@@ -59,7 +59,7 @@ class Game:
             blind = self.blind_or_buried
             picked, buried = player.pick_or_pass(blind)
             if picked:
-                self.called_ace, hole = player.call_ace()
+                self.called_ace, hole = player.call_ace(blind)
 
                 # printing
                 called_suit_string = None
@@ -83,7 +83,7 @@ class Game:
         else:
             for idx, player in enumerate(self.ordered_players):
                 for card in player.hand:
-                    if card.value == self.called_ace:
+                    if card == self.called_ace:
                         player.role = PARTNER
                         print(f'Player {idx} is the partner')
                         break
@@ -186,6 +186,7 @@ class Game:
         }
             player.played_cards = []
             player.role = None
+            player.playing_alone = False
 
         ## Shuffle the deck
         self.deck.cards += self.blind_or_buried

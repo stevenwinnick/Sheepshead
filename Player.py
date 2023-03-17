@@ -103,9 +103,18 @@ class Player():
     
     def get_playable_cards(self, led_card: Card, called_ace: Card) -> List[Card]:
         
+        playable_cards = []
+        
+        # If picker playing alone
+        if called_ace == None:
+            called_ace = Card(DUMMY, DUMMY)
+
         # If leading, play any card
         if led_card == None:
-            return self.hand
+            if len(self.hand) == 0:
+                return [self.hole]
+            else:
+                return self.hand
 
         # Partner must play called ace if its suit is led
         if self.role == PARTNER:
@@ -120,11 +129,11 @@ class Player():
             # Hole card on unknown ace
             if self.playing_alone:
                 if led_card.sheep_suit == called_ace.sheep_suit:
-                    return self.hole
+                    return [self.hole]
                 
             # Hole if hand empty
             if len(self.hand) == 0:
-                return self.hole
+                return [self.hole]
 
             # Can't play last fail usually
             qty_cards_in_called_suit = 0
@@ -132,14 +141,12 @@ class Player():
                 if card.sheep_suit == called_ace.sheep_suit:
                     qty_cards_in_called_suit += 1
             if qty_cards_in_called_suit == 1 and len(self.hand) > 1:
-                playable_cards = []
                 for card in self.hand:
                     if card.sheep_suit != called_ace.sheep_suit:
                         playable_cards.append(card)
                 return playable_cards
         
         # If have cards of led suit, need to play them
-        playable_cards = []
         for card in self.hand:
             if card.sheep_suit == called_ace.sheep_suit:
                 playable_cards.append(card)

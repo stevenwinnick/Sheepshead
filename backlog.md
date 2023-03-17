@@ -1,6 +1,6 @@
 # Backlog
 
-* Add unknown ace functionality with buried card to Game
+* Check to make sure RandomPlayer game follows rules
 * Consider if Game should track players in a fixed order instead of in an order where dealer is always first
 
 * Add Leaster

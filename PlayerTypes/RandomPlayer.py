@@ -31,13 +31,12 @@ class RandomPlayer(Player):
 
     def playCard(self, current_trick_cards: List[Card], called_ace: Card) -> Card:
         
-        # Player going first plays a random card
-        if current_trick_cards == []:
-            print("Going first, random card")
-            return self.hand.pop()
-        
         # Determine playable cards
-        playable_cards = self.get_playable_cards(current_trick_cards[0], called_ace)
+        playable_cards = []
+        if current_trick_cards == []:
+            playable_cards = self.get_playable_cards(None, called_ace)
+        else:
+            playable_cards = self.get_playable_cards(current_trick_cards[0], called_ace)
 
         # Play hole if required
         if playable_cards[0] == self.hole:
@@ -46,5 +45,6 @@ class RandomPlayer(Player):
             return hole_card
 
         # Otherwise play a random card
-        self.hand.remove(playable_cards[0])
-        return playable_cards[0]
+        card_to_play = playable_cards[0]
+        self.hand.remove(card_to_play)
+        return card_to_play
