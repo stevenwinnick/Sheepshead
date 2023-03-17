@@ -44,7 +44,10 @@ class Card():
             self.power = 10 + self.printed_suit
 
     def __eq__(self, other: 'Card'):
-        return self.value == other.value and self.printed_suit == other.printed_suit
+        if other == None:
+            return False
+        else:
+            return self.value == other.value and self.printed_suit == other.printed_suit
     
     def __str__(self):
         name = self.value
