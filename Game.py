@@ -3,16 +3,14 @@ from Constants import *
 from Deck import Deck, Card
 from Player import Player
 from PlayerTypes.RandomPlayer import RandomPlayer
-from typing import List
+from typing import List, Tuple
 
 class Game:
     def __init__(self, player_types: List[int]):
         self.blind_or_buried = []    # Stores two cards
         self.tricks = [None] * 6   # Trickinfo objects
-        self.double_on_the_bump = False
         self.deck = Deck()
         self.called_ace = None
-        self.picker_playing_alone = False
         
         self.ordered_players = []    # Players in order, with dealer in position 0
         for player_type in player_types:
@@ -24,6 +22,14 @@ class Game:
                 pass
             elif player_type == MAUER:
                 pass
+        self.fixed_players = self.ordered_players
+
+        # Unusual game types
+        self.is_leaster = False
+        self.double_on_the_bump = False
+        self.picker_playing_alone = False
+        self.called_ten = False
+        self.unknown_ace = False
 
     def add_player(self, player):
         assert isinstance(player, Player)
@@ -33,7 +39,12 @@ class Game:
         for round_number in range(number_rounds):
             self.deal()
             self.picking_phase()
-            self.play_hand()
+            bad_guys_won, multiplier, leaster_winners = self.play_hand()
+            if self.is_leaster:
+                self.leaster_pay(leaster_winners)
+            else:
+                self.pay_up(bad_guys_won, multiplier)
+            self.cleanup()
 
     def deal(self) -> None:
         self.deck.shuffleDeck()
@@ -53,12 +64,14 @@ class Game:
         Assign roles and bury two
         '''
         self.called_ace = None
+        someone_picked = False
         for player in self.ordered_players:
             player.role = GOOD_GUY
         for idx, player in enumerate(self.ordered_players):
             blind = self.blind_or_buried
             picked, buried = player.pick_or_pass(blind)
             if picked:
+                someone_picked = True
                 self.called_ace, hole = player.call_ace(blind)
 
                 # printing
@@ -78,17 +91,20 @@ class Game:
                 self.hole = hole
                 player.role = PICKER
                 break
-        if self.called_ace == None:
-            self.picker_playing_alone = True
+        if not someone_picked:
+            self.is_leaster = True
         else:
-            for idx, player in enumerate(self.ordered_players):
-                for card in player.hand:
-                    if card == self.called_ace:
-                        player.role = PARTNER
-                        print(f'Player {idx} is the partner')
-                        break
+            if self.called_ace == None:
+                self.picker_playing_alone = True
+            else:
+                for idx, player in enumerate(self.ordered_players):
+                    for card in player.hand:
+                        if card == self.called_ace:
+                            player.role = PARTNER
+                            print(f'Player {idx} is the partner')
+                            break
 
-    def play_hand(self):
+    def play_hand(self) -> Tuple[bool, int, List[Player]]:
         """
         Plays a hand of sheepshead with the given players, consisting of six tricks, 
         once dealing, picking, calling, has happenned
@@ -103,13 +119,15 @@ class Game:
             while players[0] != trick.taker:  # set the taker to be the next leader
                 players.append(players.popleft())   # move the first item to the last
 
-        bad_guys_win, multiplier = self.determine_hand_winner()  # figure out who won and how much to pay
-        if bad_guys_win:
-            print("Bad guys win")
+        if self.is_leaster:
+            return None, None, self.determine_leaster_winner()
         else:
-            print("Good guys win")
-        self.pay_up(bad_guys_win, multiplier)
-        self.cleanup()   # Reset for next hand
+            bad_guys_win, multiplier = self.determine_hand_winner()  # figure out who won and how much to pay
+            if bad_guys_win:
+                print("Bad guys win")
+            else:
+                print("Good guys win")
+            return(bad_guys_win, multiplier, [])
 
     def play_trick(self, players):
         """
@@ -118,7 +136,7 @@ class Game:
         leader = players[0]
         cards_played = []
         for i in range(5):   # Each player plays a card
-            card = players[i].playCard(cards_played, self.called_ace)   ####should eventually pass player
+            card = players[i].playCard(cards_played, self.called_ace, self.is_leaster)   ####should eventually pass player
             print(f'Player {self.ordered_players.index(players[i])} played: {card}')
             cards_played.append(card)
         taker = players[self.determine_trick_winner(cards_played)] # determine off index of winning card
@@ -138,6 +156,7 @@ class Game:
         return winning_index
     
     def determine_hand_winner(self):
+        
         """
         Count cards in taken_cards, determine whether bad guys win and what the points multiplier is
         """
@@ -153,6 +172,20 @@ class Game:
             multiplier *= 2
         return (points < 61, multiplier)
 
+    def determine_leaster_winner(self) -> List[Card]:
+        winning_players = []
+        winning_points = 0
+        for player in self.ordered_players:
+            points = 0
+            for card in player.taken_cards:
+                points += card.points
+            if points > winning_points:
+                winning_points = points
+                winning_players = [player]
+            elif points == winning_points:
+                winning_players.append(player)
+        return winning_players
+
     def pay_up(self, bad_guys_win, multiplier):
         m = multiplier
         if bad_guys_win:
@@ -167,6 +200,18 @@ class Game:
                 player.money -= m
             elif player.role == GOOD_GUY:
                 player.money += m
+
+    def leaster_pay(self, winners):
+        number_winners = len(winners)
+        print("Leaster winners:", winners)
+        for player in self.ordered_players:
+            is_winner = False
+            for winner in winners:
+                if winner == player:
+                    is_winner = True
+                    player.money += 4 * self.double_on_the_bump / number_winners
+            if not is_winner:
+                player.money -= 1 * self.double_on_the_bump
 
 
     def cleanup(self):
@@ -197,6 +242,7 @@ class Game:
         self.blind_or_buried = []
         self.called_ace = None
         self.picker_playing_alone = False
+        self.is_leaster = False
 
         ## Shift the dealer
         first = self.ordered_players[0]

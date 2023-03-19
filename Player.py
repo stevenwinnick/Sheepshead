@@ -98,7 +98,7 @@ class Player():
                 unknown_aces.append(Card(ACE, suit_minus_one + 1))
         return unknown_aces
 
-    def playCard(self, current_trick_cards: List[Card], called_ace: Card) -> Card:
+    def playCard(self, current_trick_cards: List[Card], called_ace: Card, leaster: bool) -> Card:
         raise Exception("This player type doesn't know how to play")
     
     def get_playable_cards(self, led_card: Card, called_ace: Card) -> List[Card]:

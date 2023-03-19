@@ -3,6 +3,7 @@ from Player import Player
 from Deck import Card
 from Constants import *
 from typing import List, Tuple, TYPE_CHECKING
+from random import uniform
 
 if TYPE_CHECKING:
     from Game import Game
@@ -12,7 +13,11 @@ class RandomPlayer(Player):
         super().__init__(game, starting_money)
 
     def pick_or_pass(self, blind: List[Card]) -> Tuple[bool, List[Card]]:
-        return True, blind
+        picking_probability = 0.2
+        if uniform(0, 1) < picking_probability:
+            return True, blind
+        else:
+            return False, blind
     
     def call_ace(self, buried: List[Card]) -> Tuple[Card, Card]: # second card in the hole if doing unknown ace
         callable_aces, unknown_ace = self.get_callable_aces(buried)
@@ -29,7 +34,7 @@ class RandomPlayer(Player):
                 return None, None
             return callable_aces[0], None
 
-    def playCard(self, current_trick_cards: List[Card], called_ace: Card) -> Card:
+    def playCard(self, current_trick_cards: List[Card], called_ace: Card, leaster: bool) -> Card:
         
         # Determine playable cards
         playable_cards = []
