@@ -19,8 +19,14 @@ DIAMONDS = 0
 TRUMP = 0
 DUMMY = 5 # To make logic easier for when picker plays alone
 
-# FACE CARDS
+# Face Cards
 JACK = 11
 QUEEN = 12
 KING = 13
 ACE = 14
+
+# Phases of Simulated Games
+PICKING = 0
+CALLING_ACE = 1
+LEADING = 2
+FOLLOWING = 3
