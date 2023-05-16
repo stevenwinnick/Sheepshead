@@ -23,6 +23,7 @@ class Game:
             elif player_type == MAUER:
                 pass
         self.fixed_players = self.ordered_players
+        self.order_shift = 0 # Current shift from fixed players to ordered players
 
         # Unusual game types
         self.is_leaster = False
@@ -248,6 +249,7 @@ class Game:
         first = self.ordered_players[0]
         self.ordered_players = self.ordered_players[1:]
         self.ordered_players.append(first)
+        self.order_shift = (self.order_shift + 1) % 5
 
     
 class TrickInfo:

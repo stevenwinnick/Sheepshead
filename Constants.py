@@ -28,5 +28,4 @@ ACE = 14
 # Phases of Simulated Games
 PICKING = 0
 CALLING_ACE = 1
-LEADING = 2
-FOLLOWING = 3
+PLAYING = 2
